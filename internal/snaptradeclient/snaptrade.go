@@ -13,6 +13,7 @@ type SnapTradeClient struct {
 }
 
 func New(clientId, clientSecret, userId, userSecret string) *SnapTradeClient {
+	// Create a new SnapTrade client. This is our own internal client, and not the SnapTrade SDK
 	configuration := snaptrade.NewConfiguration()
 	configuration.SetPartnerClientId(clientId)
 	configuration.SetConsumerKey(clientSecret)
@@ -29,6 +30,7 @@ func New(clientId, clientSecret, userId, userSecret string) *SnapTradeClient {
 }
 
 func (c *SnapTradeClient) RegisterUser() (string, error) {
+	// This method is not used by the rest of the codebase, but if you wanted to register a user, you could call this method
 	response, _, err := c.api.AuthenticationApi.RegisterSnapTradeUser(snaptrade.SnapTradeRegisterUserRequestBody{
 		UserId: c.userID,
 	}).Execute()
@@ -42,6 +44,7 @@ func (c *SnapTradeClient) RegisterUser() (string, error) {
 }
 
 func (c *SnapTradeClient) DeleteUser() error {
+	// Not used by the rest of the codebase, but if you wanted to delete a user, you could call this method
 	_, _, err := c.api.AuthenticationApi.DeleteSnapTradeUser(c.userID).Execute()
 	if err != nil {
 		return fmt.Errorf("failed to delete user: %w", err)
@@ -54,6 +57,8 @@ func (c *SnapTradeClient) LoginUserAndGetRedirectURI(brokerageSlug string) (stri
 	if err != nil {
 		return "", fmt.Errorf("failed to login to SnapTrade: %w", err)
 	}
+	// A redirectURI is where the user needs to be asked to visit (either via a redirect or by clicking a link)
+	// in order to complete the login/connection process
 	redirectURI := response.LoginRedirectURI.GetRedirectURI() + "&connectionType=trade&broker=" + brokerageSlug
 	return redirectURI, nil
 }
@@ -83,6 +88,8 @@ func (c *SnapTradeClient) GetUserAccountOrders(accountID string) ([]snaptrade.Ac
 }
 
 func (c *SnapTradeClient) PlaceForceOrder(accountID, action, ticker string, quantity float32) (*snaptrade.AccountOrderRecord, error) {
+	// Places an order. Note that this endpoint has no validation, so it's
+	// up to you to ensure that the action, ticker, and quantity are valid.
 	orderRecord, _, err := c.api.TradingApi.PlaceForceOrder(c.userID, c.userSecret, snaptrade.ManualTradeFormWithOptions{
 		AccountId:   accountID,
 		Action:      snaptrade.ActionStrictWithOptions(action),
